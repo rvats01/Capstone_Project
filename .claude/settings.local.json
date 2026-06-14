@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "Bash(pip3 list *)",
+      "Bash(pip3 install *)",
+      "Bash(printenv ANTHROPIC_API_KEY)",
+      "Read(//home/labuser/.claude/**)",
+      "Bash(env)"
+    ]
+  }
+}

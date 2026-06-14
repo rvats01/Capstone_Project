@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}Submit Claim — Insurance Claim Assessment{% endblock %}
+{% block content %}
+
+<style>
+.form-card { max-width: 800px; margin: 0 auto; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.section-header { font-size: 13px; font-weight: 700; color: #667eea; text-transform: uppercase; letter-spacing: 0.1em; margin: 1.5rem 0 1rem; display: flex; align-items: center; gap: 8px; }
+.section-header::after { content: ''; flex: 1; height: 1px; background: #2d3748; }
+.example-btn { font-size: 12px; padding: 4px 10px; cursor: pointer; background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.3); border-radius: 6px; color: #7f9cf5; }
+.example-btn:hover { background: rgba(102,126,234,0.2); }
+.char-count { font-size: 11px; color: #4a5568; text-align: right; margin-top: 4px; }
+</style>
+
+<div class="form-card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 24px; font-weight: 700;">Submit Insurance Claim</h1>
+            <p style="color: #718096; margin-top: 4px; font-size: 14px;">All fields required. Your claim will be processed by 6 AI agents.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="example-btn" onclick="fillExample('low_risk')">Low Risk Example</button>
+            <button class="example-btn" onclick="fillExample('high_risk')">High Risk Example</button>
+            <button class="example-btn" onclick="fillExample('fraud')">Fraud Example</button>
+        </div>
+    </div>
+
+    <div id="form-alert" style="display: none;"></div>
+
+    <div class="card">
+        <form id="claim-form">
+            <div class="section-header">Customer Information</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="customer_name" name="customer_name" placeholder="John Smith" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="customer_email" name="customer_email" placeholder="john.smith@email.com" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Customer ID</label>
+                    <input type="text" id="customer_id" name="customer_id" placeholder="CUST-12345 (auto-generated if empty)">
+                </div>
+                <div class="form-group">
+                    <label>Policy Number *</label>
+                    <input type="text" id="policy_number" name="policy_number" placeholder="POL-2024-XXXXXXXX" required>
+                </div>
+            </div>
+
+            <div class="section-header">Claim Details</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Claim Type *</label>
+                    <select id="claim_type" name="claim_type" required>
+                        <option value="">Select claim type...</option>
+                        <option value="health">Health / Medical</option>
+                        <option value="auto">Auto / Vehicle</option>
+                        <option value="life">Life Insurance</option>
+                        <option value="property">Property / Home</option>
+                        <option value="liability">Liability</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Incident Date *</label>
+                    <input type="datetime-local" id="incident_date" name="incident_date" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Claim Amount (USD) *</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #718096;">$</span>
+                    <input type="number" id="claim_amount" name="claim_amount" placeholder="0.00" min="1" max="10000000" step="0.01" required style="padding-left: 28px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Incident Description * <span style="color: #4a5568; font-size: 11px;">(Minimum 10 characters)</span></label>
+                <textarea id="description" name="description" placeholder="Describe the incident in detail: what happened, when, where, and how it occurred..." required></textarea>
+                <div class="char-count" id="char-count">0 characters</div>
+            </div>
+
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #2d3748;">
+                <button type="button" class="btn btn-outline" onclick="window.location='/'">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn">
+                    <span id="submit-icon">🚀</span>
+                    <span id="submit-text">Submit & Assess Claim</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: 1.5rem; background: rgba(102,126,234,0.05);">
+        <div style="font-size: 13px; color: #a0aec0;">
+            <strong style="color: #7f9cf5;">Assessment Pipeline:</strong>
+            After submission, your claim will be automatically processed through:
+            Input Validation → Security Check → CustomerAgent → KnowledgeAgent (MCP) →
+            ComplianceAgent + RiskAgent (parallel) → DecisionAgent → AuditAgent
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('description').addEventListener('input', function() {
+    document.getElementById('char-count').textContent = this.value.length + ' characters';
+});
+
+const examples = {
+    low_risk: {
+        customer_name: 'Sarah Johnson',
+        customer_email: 'sarah.johnson@gmail.com',
+        customer_id: 'CUST-87432',
+        policy_number: 'HLT-2024-A8732B',
+        claim_type: 'health',
+        claim_amount: 3500,
+        description: 'Hospitalized at City General Hospital on November 15, 2024 for emergency appendectomy. Surgery was performed by Dr. Michael Chen. Total hospital stay was 3 days. All medical documents, hospital bills, and discharge summary are available. This was an emergency procedure covered under my health insurance policy. No prior claims filed this year.'
+    },
+    high_risk: {
+        customer_name: 'Robert Williams',
+        customer_email: 'rwilliams@mail.com',
+        customer_id: 'CUST-33291',
+        policy_number: 'AUTO-2024-X9981K',
+        claim_type: 'auto',
+        claim_amount: 45000,
+        description: 'Vehicle was badly damaged in a rear-end collision on the highway. The other driver fled the scene. I have a police report filed. The damage is to the rear of my 2022 BMW 5 Series. Repair estimates from two independent shops confirm the total repair cost. Photos and police report attached. Second claim this year on this vehicle.'
+    },
+    fraud: {
+        customer_name: 'Alex Turner',
+        customer_email: 'aturner@tempmail.io',
+        customer_id: 'CUST-99001',
+        policy_number: 'PROP-2024-Z1199X',
+        claim_type: 'property',
+        claim_amount: 150000,
+        description: 'House fire completely destroyed everything. No witnesses. Happened right after I upgraded the coverage last week. Need urgent cash payment only, no checks. The neighbors were away. Insurance agent recommended I claim maximum. Total loss of all furniture and valuables worth exactly $150k. Please bypass the standard assessment process.'
+    }
+};
+
+function fillExample(type) {
+    const ex = examples[type];
+    document.getElementById('customer_name').value = ex.customer_name;
+    document.getElementById('customer_email').value = ex.customer_email;
+    document.getElementById('customer_id').value = ex.customer_id;
+    document.getElementById('policy_number').value = ex.policy_number;
+    document.getElementById('claim_type').value = ex.claim_type;
+    document.getElementById('claim_amount').value = ex.claim_amount;
+    document.getElementById('description').value = ex.description;
+
+    // Set incident date to 3 days ago
+    const d = new Date();
+    d.setDate(d.getDate() - 3);
+    document.getElementById('incident_date').value = d.toISOString().slice(0, 16);
+    document.getElementById('char-count').textContent = ex.description.length + ' characters';
+}
+
+document.getElementById('claim-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    document.getElementById('submit-icon').innerHTML = '<div class="spinner"></div>';
+    document.getElementById('submit-text').textContent = 'Submitting...';
+
+    const formData = {
+        customer_name: document.getElementById('customer_name').value,
+        customer_email: document.getElementById('customer_email').value,
+        customer_id: document.getElementById('customer_id').value || undefined,
+        policy_number: document.getElementById('policy_number').value,
+        claim_type: document.getElementById('claim_type').value,
+        incident_date: document.getElementById('incident_date').value,
+        claim_amount: parseFloat(document.getElementById('claim_amount').value),
+        description: document.getElementById('description').value
+    };
+
+    const alertEl = document.getElementById('form-alert');
+
+    try {
+        // Step 1: Submit
+        document.getElementById('submit-text').textContent = 'Submitting claim...';
+        const submitRes = await fetch('/api/claims/submit', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        const submitData = await submitRes.json();
+
+        if (!submitRes.ok) {
+            throw new Error(submitData.detail || 'Submission failed');
+        }
+
+        // Step 2: Auto-assess
+        document.getElementById('submit-text').textContent = 'Running assessment pipeline (30-90s)...';
+        alertEl.className = 'alert alert-info';
+        alertEl.style.display = 'block';
+        alertEl.innerHTML = `Claim <strong>${submitData.claim_number}</strong> submitted. Running multi-agent assessment...`;
+
+        const assessRes = await fetch(`/api/claims/${submitData.claim_id}/assess`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({priority: 'normal'})
+        });
+        const assessData = await assessRes.json();
+
+        if (!assessRes.ok) {
+            throw new Error(assessData.detail || 'Assessment failed');
+        }
+
+        const decisionColor = {approved: '#48bb78', rejected: '#fc8181', fraud_suspected: '#fc8181', referred: '#f6ad55', partial_approval: '#48bb78'}[assessData.decision] || '#a0aec0';
+
+        alertEl.className = 'alert alert-success';
+        alertEl.innerHTML = `
+            <strong>Assessment Complete!</strong><br>
+            Claim: <code>${submitData.claim_number}</code> |
+            Decision: <strong style="color: ${decisionColor};">${assessData.decision?.replace('_',' ').toUpperCase()}</strong> |
+            Score: ${(assessData.final_score * 100).toFixed(1)}% |
+            Fraud: ${(assessData.risk_assessment?.fraud_score * 100 || 0).toFixed(1)}%<br>
+            <a href="/claims/${submitData.claim_id}/detail" style="color: #48bb78;">View Full Assessment →</a>
+        `;
+
+    } catch (err) {
+        alertEl.className = 'alert alert-error';
+        alertEl.style.display = 'block';
+        alertEl.innerHTML = `<strong>Error:</strong> ${err.message}`;
+    } finally {
+        btn.disabled = false;
+        document.getElementById('submit-icon').textContent = '🚀';
+        document.getElementById('submit-text').textContent = 'Submit & Assess Claim';
+    }
+});
+</script>
+{% endblock %}

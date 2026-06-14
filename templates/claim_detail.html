@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}Claim Detail — Insurance Claim Assessment{% endblock %}
+{% block content %}
+
+<style>
+.detail-section { margin-bottom: 1.5rem; }
+.detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 14px; }
+.detail-label { width: 200px; flex-shrink: 0; color: #718096; font-weight: 500; }
+.detail-value { color: #e2e8f0; flex: 1; }
+.score-item { margin-bottom: 12px; }
+.score-item-label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
+.agent-output { background: #161b27; border: 1px solid #2d3748; border-radius: 8px; padding: 1rem; margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #a0aec0; }
+.tab-nav { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid #2d3748; padding-bottom: 0; }
+.tab { padding: 10px 20px; font-size: 14px; cursor: pointer; color: #718096; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: #667eea; border-bottom-color: #667eea; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+code { background: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; color: #7f9cf5; }
+.audit-entry { background: #1a202c; border-left: 3px solid #2d3748; padding: 10px 16px; margin-bottom: 8px; border-radius: 0 8px 8px 0; font-size: 13px; }
+.audit-entry.passed { border-left-color: #48bb78; }
+.audit-entry.failed { border-left-color: #fc8181; }
+</style>
+
+<div id="loading-state" style="text-align: center; padding: 4rem; color: #718096;">
+    <div class="spinner" style="margin: 0 auto 1rem; width: 32px; height: 32px;"></div>
+    Loading claim details...
+</div>
+
+<div id="claim-content" style="display: none;">
+    <!-- Header -->
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="/claims" style="color: #667eea; font-size: 14px; text-decoration: none;">← All Claims</a>
+                <span style="color: #4a5568;">/</span>
+                <code id="claim-number-header" style="font-size: 16px;"></code>
+            </div>
+            <h1 style="font-size: 22px; font-weight: 700; margin-top: 8px;" id="claim-title">Claim Details</h1>
+        </div>
+        <div style="text-align: right;">
+            <div id="decision-badge-large" style="font-size: 18px; font-weight: 700;"></div>
+            <div id="approved-amount-display" style="font-size: 14px; color: #68d391; margin-top: 4px;"></div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-nav">
+        <div class="tab active" onclick="showTab('overview')">Overview</div>
+        <div class="tab" onclick="showTab('assessment')">Assessment Results</div>
+        <div class="tab" onclick="showTab('reasoning')">Agent Reasoning</div>
+        <div class="tab" onclick="showTab('audit')">Audit Trail</div>
+    </div>
+
+    <!-- Overview Tab -->
+    <div class="tab-content active" id="tab-overview">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">Claim Information</span></div>
+                <div id="claim-info-rows"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">Assessment Scores</span></div>
+                <div style="padding-top: 8px;">
+                    <div class="score-item">
+                        <div class="score-item-label"><span>Final Score</span><span id="s-final">—</span></div>
+                        <div class="score-bar"><div class="score-fill score-good" id="sb-final" style="width:0%"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label"><span>Compliance Score</span><span id="s-compliance">—</span></div>
+                        <div class="score-bar"><div class="score-fill score-good" id="sb-compliance" style="width:0%"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label"><span>Fraud Score (lower=better)</span><span id="s-fraud" style="color:#fc8181">—</span></div>
+                        <div class="score-bar"><div class="score-fill score-bad" id="sb-fraud" style="width:0%"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label"><span>Risk Score (lower=better)</span><span id="s-risk">—</span></div>
+                        <div class="score-bar"><div class="score-fill score-medium" id="sb-risk" style="width:0%"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-item-label"><span>Identity Confidence</span><span id="s-identity">—</span></div>
+                        <div class="score-bar"><div class="score-fill score-good" id="sb-identity" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #2d3748;">
+                    <div style="font-size: 13px; font-weight: 600; color: #a0aec0; margin-bottom: 8px;">Compliance Status</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="compliance-badges"></div>
+                </div>
+
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #2d3748;">
+                    <div style="font-size: 13px; font-weight: 600; color: #a0aec0; margin-bottom: 8px;">Fraud Indicators</div>
+                    <div id="fraud-indicators" style="font-size: 13px; color: #718096;">None detected</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header"><span class="card-title">Decision Reason</span></div>
+            <div id="decision-reason" style="font-size: 14px; color: #a0aec0; line-height: 1.7;"></div>
+        </div>
+    </div>
+
+    <!-- Assessment Tab -->
+    <div class="tab-content" id="tab-assessment">
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">Risk Assessment</span></div>
+                <div id="risk-details"></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">Compliance Assessment</span></div>
+                <div id="compliance-details"></div>
+            </div>
+        </div>
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header"><span class="card-title">Explainability — Decision Chain</span></div>
+            <div id="explainability-chain"></div>
+        </div>
+    </div>
+
+    <!-- Agent Reasoning Tab -->
+    <div class="tab-content" id="tab-reasoning">
+        <div style="display: grid; gap: 1.25rem;" id="agent-reasoning-list"></div>
+    </div>
+
+    <!-- Audit Trail Tab -->
+    <div class="tab-content" id="tab-audit">
+        <div id="audit-trail-content">
+            <div style="text-align: center; padding: 2rem; color: #718096;">Loading audit trail...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const claimId = '{{ claim_id }}';
+let claimData = null;
+
+function showTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.target.classList.add('active');
+    if (tab === 'audit') loadAuditTrail();
+}
+
+function getStatusBadge(status) {
+    const map = {approved:'badge-approved', rejected:'badge-rejected', fraud_suspected:'badge-fraud', under_review:'badge-review', submitted:'badge-submitted', assessing:'badge-pending'};
+    return `<span class="badge ${map[status]||'badge-submitted'}">${status.replace(/_/g,' ')}</span>`;
+}
+
+function setScore(id, val, barId, reverse=false) {
+    const pct = Math.round(val * 100);
+    document.getElementById(id).textContent = val.toFixed(3);
+    const el = document.getElementById(barId);
+    const cls = reverse ? (pct > 70 ? 'score-bad' : pct > 40 ? 'score-medium' : 'score-good') : (pct > 70 ? 'score-good' : pct > 40 ? 'score-medium' : 'score-bad');
+    el.className = `score-fill ${cls}`;
+    el.style.width = pct + '%';
+}
+
+async function loadClaim() {
+    const res = await fetch(`/api/claims/${claimId}`);
+    claimData = await res.json();
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('claim-content').style.display = 'block';
+
+    // Header
+    document.getElementById('claim-number-header').textContent = claimData.claim_number;
+    document.getElementById('claim-title').textContent = `${claimData.claim_type.charAt(0).toUpperCase() + claimData.claim_type.slice(1)} Insurance Claim`;
+    document.getElementById('decision-badge-large').innerHTML = getStatusBadge(claimData.status);
+    if (claimData.approved_amount > 0) {
+        document.getElementById('approved-amount-display').textContent = `Approved: $${claimData.approved_amount.toLocaleString()}`;
+    }
+
+    // Scores
+    setScore('s-final', claimData.final_score || 0, 'sb-final');
+    setScore('s-compliance', claimData.compliance_score || 0, 'sb-compliance');
+    setScore('s-fraud', claimData.fraud_score || 0, 'sb-fraud', true);
+    setScore('s-risk', claimData.risk_score || 0, 'sb-risk', true);
+    setScore('s-identity', claimData.agent_reasoning?.customer ? 0.8 : 0.5, 'sb-identity');
+
+    // Claim info rows
+    const rows = [
+        ['Customer', claimData.customer_name],
+        ['Policy Number', `<code>${claimData.policy_number}</code>`],
+        ['Claim Type', `<span class="badge badge-submitted">${claimData.claim_type}</span>`],
+        ['Claim Amount', `$${claimData.claim_amount?.toLocaleString()}`],
+        ['Incident Date', claimData.incident_date ? new Date(claimData.incident_date).toLocaleDateString() : '—'],
+        ['Status', getStatusBadge(claimData.status)],
+        ['Submitted', claimData.created_at ? new Date(claimData.created_at).toLocaleString() : '—'],
+        ['Assessed', claimData.assessed_at ? new Date(claimData.assessed_at).toLocaleString() : 'Not yet assessed'],
+    ];
+    document.getElementById('claim-info-rows').innerHTML = rows.map(([l,v]) =>
+        `<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${v}</div></div>`
+    ).join('');
+
+    // Compliance badges
+    const compBadges = [
+        ['IRDAI', (claimData.compliance_score || 0) > 0.5],
+        ['SOX', (claimData.fraud_score || 0) < 0.7],
+        ['AML', !(claimData.fraud_indicators || []).length],
+        ['KYC', (claimData.final_score || 0) > 0.4],
+    ].map(([n,ok]) => `<span class="badge ${ok ? 'badge-approved' : 'badge-rejected'}">${n}: ${ok ? 'Pass' : 'Review'}</span>`).join('');
+    document.getElementById('compliance-badges').innerHTML = compBadges;
+
+    // Fraud indicators
+    const indicators = claimData.fraud_indicators || [];
+    document.getElementById('fraud-indicators').innerHTML = indicators.length
+        ? indicators.map(i => `<div style="padding: 4px 0; color: #fc8181;">• ${i}</div>`).join('')
+        : '<div style="color: #68d391;">No fraud indicators detected</div>';
+
+    // Decision reason
+    document.getElementById('decision-reason').textContent = claimData.decision_reason || 'No decision reason provided';
+
+    // Assessment tab
+    const compData = claimData.compliance_flags || [];
+    document.getElementById('compliance-details').innerHTML = `
+        <div class="detail-row"><div class="detail-label">Overall</div><div class="detail-value" style="color: ${(claimData.compliance_score||0) > 0.5 ? '#68d391' : '#fc8181'}">${(claimData.compliance_score||0) > 0.5 ? 'COMPLIANT' : 'NON-COMPLIANT'}</div></div>
+        <div class="detail-row"><div class="detail-label">Score</div><div class="detail-value">${(claimData.compliance_score||0).toFixed(3)}</div></div>
+        <div class="detail-row"><div class="detail-label">Violations</div><div class="detail-value">${compData.length ? compData.join(', ') : 'None'}</div></div>
+    `;
+    document.getElementById('risk-details').innerHTML = `
+        <div class="detail-row"><div class="detail-label">Fraud Score</div><div class="detail-value" style="color: ${(claimData.fraud_score||0) > 0.7 ? '#fc8181' : '#68d391'}">${(claimData.fraud_score||0).toFixed(3)}</div></div>
+        <div class="detail-row"><div class="detail-label">Risk Level</div><div class="detail-value">${claimData.risk_level || 'medium'}</div></div>
+        <div class="detail-row"><div class="detail-label">Risk Score</div><div class="detail-value">${(claimData.risk_score||0).toFixed(3)}</div></div>
+        <div class="detail-row"><div class="detail-label">Indicators</div><div class="detail-value">${(claimData.fraud_indicators||[]).length} found</div></div>
+    `;
+
+    // Explainability
+    const expl = claimData.agent_reasoning?.explainability || {};
+    const chain = expl.decision_path || [];
+    document.getElementById('explainability-chain').innerHTML = chain.length
+        ? chain.map((s, i) => `<div style="padding: 8px 12px; background: rgba(102,126,234,0.05); border-left: 3px solid #4a5568; margin-bottom: 6px; font-size: 13px; color: #a0aec0; border-radius: 0 6px 6px 0;"><span style="color: #667eea; font-weight: 600;">Step ${i+1}:</span> ${s}</div>`).join('')
+        : '<div style="color: #718096; font-size: 13px;">Assessment completed — see individual agent reasoning for details.</div>';
+
+    // Agent reasoning
+    const reasoning = claimData.agent_reasoning || {};
+    const agents = [
+        ['CustomerAgent 👤', reasoning.customer || 'No reasoning available'],
+        ['ComplianceAgent ⚖️', reasoning.compliance || 'No reasoning available'],
+        ['RiskAgent 🔍', reasoning.risk || 'No reasoning available'],
+        ['DecisionAgent ⚡', reasoning.decision || 'No reasoning available'],
+    ];
+    document.getElementById('agent-reasoning-list').innerHTML = agents.map(([name, text]) => `
+        <div class="card">
+            <div class="card-header"><span class="card-title">${name}</span></div>
+            <div class="agent-output">${text}</div>
+        </div>
+    `).join('');
+}
+
+async function loadAuditTrail() {
+    const res = await fetch(`/api/claims/${claimId}/audit`);
+    const data = await res.json();
+    const container = document.getElementById('audit-trail-content');
+
+    if (!data.audit_trail.length) {
+        container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #718096;">No audit records found. Trigger assessment to generate audit trail.</div>';
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="margin-bottom: 1rem; font-size: 13px; color: #718096;">${data.total_entries} audit entries</div>
+        ${data.audit_trail.map(e => `
+            <div class="audit-entry ${e.passed ? 'passed' : 'failed'}">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                    <div style="font-weight: 600; color: ${e.passed ? '#68d391' : '#fc8181'};">${e.agent_name} — ${e.action}</div>
+                    <div style="font-size: 11px; color: #4a5568;">${e.timestamp ? new Date(e.timestamp).toLocaleString() : 'N/A'} ${e.duration_ms ? `(${e.duration_ms}ms)` : ''}</div>
+                </div>
+                ${e.hook_applied ? `<div style="color: #f6ad55; font-size: 12px;">Hook: ${e.hook_applied}</div>` : ''}
+                ${e.audit_hash ? `<div style="color: #4a5568; font-size: 11px; font-family: monospace;">Hash: ${e.audit_hash}</div>` : ''}
+            </div>
+        `).join('')}
+    `;
+}
+
+loadClaim();
+</script>
+{% endblock %}
