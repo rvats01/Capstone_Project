@@ -3,6 +3,7 @@
 import time
 import logging
 from agents.base_agent import BaseAgent, AgentResult
+from skills.compliance_validation import ComplianceValidator
 
 logger = logging.getLogger(__name__)
 
@@ -52,42 +53,73 @@ class ComplianceAgent(BaseAgent):
 
     def __init__(self):
         super().__init__("ComplianceAgent")
+        self.compliance_validator = ComplianceValidator()
 
     def process(self, claim_data: dict, knowledge_result: dict) -> AgentResult:
         start = time.time()
         try:
+            # Use ComplianceValidator skill for structured compliance checks
+            customer_data = {
+                "customer_id": claim_data.get("customer_id", ""),
+                "kyc_completed": claim_data.get("kyc_completed", False),
+                "aml_screening_passed": claim_data.get("aml_screening_passed", True),
+                "pep_status": False,
+                "recent_claims_count": 0
+            }
+
             applicable_regs = knowledge_result.get("applicable_regulations", [])
+
+            compliance_result = self.compliance_validator.validate_compliance(
+                claim_data,
+                applicable_regs,
+                customer_data
+            )
+
             reg_summary = "\n".join([
                 f"  - {r.get('rule_id', '')}: {r.get('summary', r.get('title', ''))}"
                 for r in applicable_regs
             ])
 
-            user_msg = f"""Perform comprehensive compliance validation for this insurance claim:
+            user_msg = f"""Review our structured compliance validation for this insurance claim:
 
-Claim Details:
-- Customer ID: {claim_data.get('customer_id', 'N/A')}
-- Claim Type: {claim_data.get('claim_type', 'unknown')}
-- Claim Amount: ${claim_data.get('claim_amount', 0):,.2f}
-- Policy Number: {claim_data.get('policy_number', 'N/A')}
-- Incident Date: {claim_data.get('incident_date', 'N/A')}
-- Description: {claim_data.get('description', 'N/A')[:300]}
+Compliance Assessment Summary:
+- Overall Compliance: {compliance_result.get('overall_compliance', 'unknown').upper()}
+- Compliance Score: {compliance_result.get('compliance_score', 0):.1%}
+- Blocking Violations: {len(compliance_result.get('blocking_violations', []))}
+
+IRDAI Checks:
+- Policy Active: {compliance_result.get('irdai_checks', {}).get('policy_active_ok', False)}
+- Documentation Complete: {compliance_result.get('irdai_checks', {}).get('documentation_ok', False)}
+- Claim Timeline Met: {compliance_result.get('irdai_checks', {}).get('claim_time_limit_ok', False)}
+
+SOX Checks:
+- Dual Approval Required: {compliance_result.get('sox_checks', {}).get('dual_approval_required', False)}
+- Audit Trail Complete: {compliance_result.get('sox_checks', {}).get('audit_trail_complete', False)}
+
+AML Checks:
+- KYC Completed: {compliance_result.get('aml_checks', {}).get('kyc_completed', False)}
+- AML Screening Passed: {compliance_result.get('aml_checks', {}).get('aml_screening_passed', True)}
 
 Applicable Regulations:
 {reg_summary if reg_summary else "  - Standard insurance regulations apply"}
 
-Policy Requirements from Knowledge Agent:
-{knowledge_result.get('key_requirements', [])}
+Mandatory Actions: {compliance_result.get('mandatory_actions', [])}
 
-Check ALL of:
-1. IRDAI compliance (settlement timelines, documentation, policy validity)
-2. SOX requirements (financial controls, audit trail, dual approval for large amounts)
-3. AML screening (suspicious patterns, KYC, structuring)
-4. Data privacy compliance
-
-Return complete JSON compliance assessment."""
+Provide final compliance recommendation and any additional considerations."""
 
             response = self._call_claude(SYSTEM_PROMPT, user_msg)
             result_data = self._parse_json_response(response)
+
+            # Merge validator results with Claude analysis
+            result_data.update({
+                "overall_compliance": compliance_result.get("overall_compliance", result_data.get("overall_compliance", "fail")),
+                "compliance_score": compliance_result.get("compliance_score", result_data.get("compliance_score", 0)),
+                "irdai_checks": compliance_result.get("irdai_checks"),
+                "sox_checks": compliance_result.get("sox_checks"),
+                "aml_checks": compliance_result.get("aml_checks"),
+                "blocking_violations": compliance_result.get("blocking_violations"),
+                "mandatory_actions": compliance_result.get("mandatory_actions")
+            })
 
             return AgentResult(
                 agent_name=self.name,

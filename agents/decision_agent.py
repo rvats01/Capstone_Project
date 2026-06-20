@@ -3,6 +3,7 @@
 import time
 import logging
 from agents.base_agent import BaseAgent, AgentResult
+from skills.financial_assessment import FinancialAssessor
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,7 @@ class DecisionAgent(BaseAgent):
 
     def __init__(self):
         super().__init__("DecisionAgent")
+        self.financial_assessor = FinancialAssessor()
 
     def process(
         self,
@@ -67,6 +69,19 @@ class DecisionAgent(BaseAgent):
     ) -> AgentResult:
         start = time.time()
         try:
+            # Use FinancialAssessor skill for claim valuation
+            policy_data = knowledge_result.get("policy_data", {})
+            market_data = claim_data.get("market_data", {})
+
+            financial_assessment = self.financial_assessor.assess_claim_value(
+                claim_data,
+                policy_data,
+                market_data
+            )
+
+            fraud_score = risk_result.get("fraud_score", 0)
+            compliance_status = compliance_result.get("overall_compliance", "unknown")
+
             user_msg = f"""Make the final insurance claim decision based on all agent assessments:
 
 Original Claim:
@@ -74,37 +89,42 @@ Original Claim:
 - Amount Requested: ${claim_data.get('claim_amount', 0):,.2f}
 - Customer: {claim_data.get('customer_name', 'N/A')}
 - Policy: {claim_data.get('policy_number', 'N/A')}
-- Description: {claim_data.get('description', 'N/A')[:300]}
 
 CustomerAgent Assessment:
 - Identity Validated: {customer_result.get('customer_validated', False)}
+- Identity Confidence: {customer_result.get('identity_confidence', 0.5):.0%}
 - Policy Active: {customer_result.get('policy_active', False)}
-- Identity Confidence: {customer_result.get('identity_confidence', 0.5)}
-- Inconsistencies: {customer_result.get('inconsistencies', [])}
-- Behavioral Flags: {customer_result.get('behavioral_flags', [])}
-
-KnowledgeAgent Assessment:
-- Applicable Regulations: {len(knowledge_result.get('applicable_regulations', []))} found
-- Key Requirements: {knowledge_result.get('key_requirements', [])}
-- Regulatory Flags: {knowledge_result.get('regulatory_flags', [])}
+- Inconsistencies: {len(customer_result.get('inconsistencies', []))} found
 
 ComplianceAgent Assessment:
-- Overall Compliance: {compliance_result.get('overall_compliance', 'unknown')}
-- Compliance Score: {compliance_result.get('compliance_score', 0)}
-- Blocking Violations: {compliance_result.get('blocking_violations', [])}
-- IRDAI Issues: {compliance_result.get('irdai_checks', {}).get('violations', [])}
-- AML Issues: {compliance_result.get('aml_checks', {}).get('violations', [])}
+- Overall Status: {compliance_status.upper()}
+- Compliance Score: {compliance_result.get('compliance_score', 0):.0%}
+- Blocking Violations: {len(compliance_result.get('blocking_violations', []))}
 
 RiskAgent Assessment:
-- Fraud Score: {risk_result.get('fraud_score', 0)}
-- Risk Level: {risk_result.get('risk_level', 'medium')}
+- Fraud Score: {fraud_score:.3f}
+- Risk Level: {risk_result.get('risk_level', 'medium').upper()}
 - Investigation Required: {risk_result.get('investigation_required', False)}
-- Fraud Indicators: {[f.get('indicator', '') for f in risk_result.get('fraud_indicators', [])[:3]]}
+- Fraud Indicators: {len(risk_result.get('fraud_indicators', []))} detected
 
-Make final decision with complete justification and explain the reasoning chain step by step."""
+Financial Assessment:
+- Claimed Amount: ${claim_data.get('claim_amount', 0):,.2f}
+- Valuation: ${financial_assessment.get('valuation', {}).get('estimated_value', 0):,.2f}
+- Approved Amount (Before Deductible): ${financial_assessment.get('adjusted_approved_amount', 0):,.2f}
+- Coverage Applies: {financial_assessment.get('coverage_details', {}).get('policy_coverage_applies', False)}
+- Approval Rate: {financial_assessment.get('approval_percentage', 0):.1f}%
+
+Make final decision with complete justification using all assessments and financial analysis."""
 
             response = self._call_claude(SYSTEM_PROMPT, user_msg)
             result_data = self._parse_json_response(response)
+
+            # Merge financial assessment results
+            result_data.update({
+                "approved_amount": financial_assessment.get("adjusted_approved_amount", result_data.get("approved_amount", 0)),
+                "financial_assessment": financial_assessment,
+                "deductible_applied": financial_assessment.get("coverage_details", {}).get("deductible", 0)
+            })
 
             return AgentResult(
                 agent_name=self.name,
