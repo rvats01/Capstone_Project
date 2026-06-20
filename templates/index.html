@@ -3,27 +3,27 @@
 {% block content %}
 
 <style>
-.stat-card { background: #1a202c; border: 1px solid #2d3748; border-radius: 12px; padding: 1.25rem 1.5rem; }
-.stat-value { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; }
-.stat-label { font-size: 13px; color: #718096; }
-.stat-change { font-size: 12px; color: #68d391; margin-top: 4px; }
-.agent-card { background: #1e2332; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 12px; }
+.stat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.stat-value { font-size: 2.5rem; font-weight: 700; margin: 0.5rem 0; color: #1e293b; }
+.stat-label { font-size: 13px; color: #64748b; }
+.stat-change { font-size: 12px; color: #059669; margin-top: 4px; }
+.agent-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 12px; }
 .agent-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.agent-name { font-size: 14px; font-weight: 600; color: #e2e8f0; }
-.agent-role { font-size: 12px; color: #718096; }
+.agent-name { font-size: 14px; font-weight: 600; color: #1e293b; }
+.agent-role { font-size: 12px; color: #64748b; }
 .agent-status { margin-left: auto; }
-.system-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 14px; }
+.system-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #1e293b; }
 .system-item:last-child { border-bottom: none; }
-.dot-green { width: 8px; height: 8px; background: #48bb78; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px #48bb78; }
+.dot-green { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px rgba(16,185,129,0.6); }
 </style>
 
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
     <div>
-        <h1 style="font-size: 24px; font-weight: 700; color: #e2e8f0;">System Dashboard</h1>
-        <p style="color: #718096; margin-top: 4px; font-size: 14px;">Real-time insurance claim assessment monitoring</p>
+        <h1 style="font-size: 24px; font-weight: 700; color: #1e293b;">System Dashboard</h1>
+        <p style="color: #64748b; margin-top: 4px; font-size: 14px;">Real-time insurance claim assessment monitoring</p>
     </div>
     <div style="display: flex; gap: 12px; align-items: center;">
-        <span style="font-size: 13px; color: #718096;" id="last-updated">Loading...</span>
+        <span style="font-size: 13px; color: #64748b;" id="last-updated">Loading...</span>
         <a href="/submit" class="btn btn-primary">+ Submit Claim</a>
     </div>
 </div>
@@ -32,23 +32,23 @@
 <div class="grid-4" style="margin-bottom: 2rem;" id="stats-grid">
     <div class="stat-card">
         <div class="stat-label">Total Claims</div>
-        <div class="stat-value" style="color: #e2e8f0;" id="stat-total">—</div>
+        <div class="stat-value" style="color: #1e293b;" id="stat-total">—</div>
         <div class="stat-change" id="stat-pending">— pending</div>
     </div>
     <div class="stat-card">
         <div class="stat-label">Approved</div>
-        <div class="stat-value" style="color: #48bb78;" id="stat-approved">—</div>
-        <div class="stat-change" id="stat-approval-rate" style="color: #68d391;">—% approval rate</div>
+        <div class="stat-value" style="color: #059669;" id="stat-approved">—</div>
+        <div class="stat-change" id="stat-approval-rate" style="color: #059669;">—% approval rate</div>
     </div>
     <div class="stat-card">
         <div class="stat-label">Rejected</div>
-        <div class="stat-value" style="color: #fc8181;" id="stat-rejected">—</div>
-        <div class="stat-change" style="color: #fc8181;" id="stat-fraud">— fraud suspected</div>
+        <div class="stat-value" style="color: #dc2626;" id="stat-rejected">—</div>
+        <div class="stat-change" style="color: #dc2626;" id="stat-fraud">— fraud suspected</div>
     </div>
     <div class="stat-card">
         <div class="stat-label">Avg Fraud Score</div>
-        <div class="stat-value" style="color: #f6ad55;" id="stat-fraud-score">—</div>
-        <div class="stat-change" id="stat-avg-amount" style="color: #a0aec0;">avg claim amount</div>
+        <div class="stat-value" style="color: #ea580c;" id="stat-fraud-score">—</div>
+        <div class="stat-change" id="stat-avg-amount" style="color: #64748b;">avg claim amount</div>
     </div>
 </div>
 
@@ -61,32 +61,32 @@
         </div>
         <div style="display: grid; gap: 10px;">
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #667eea22, #764ba222);">👤</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #3b82f611, #1e40af11);">👤</div>
                 <div><div class="agent-name">CustomerAgent</div><div class="agent-role">Identity validation & claim extraction</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #48bb7822, #38a16922);">📚</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #10b98111, #05966911);">📚</div>
                 <div><div class="agent-name">KnowledgeAgent</div><div class="agent-role">MCP regulatory knowledge retrieval</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #ed893622, #dd6b2022);">⚖️</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #f5991c11, #ea580c11);">⚖️</div>
                 <div><div class="agent-name">ComplianceAgent</div><div class="agent-role">IRDAI / SOX / AML validation</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #fc818122, #e53e3e22);">🔍</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #ef444411, #dc262611);">🔍</div>
                 <div><div class="agent-name">RiskAgent</div><div class="agent-role">Fraud detection & risk scoring</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #9f7aea22, #764ba222);">⚡</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #8b5cf611, #6d28d911);">⚡</div>
                 <div><div class="agent-name">DecisionAgent</div><div class="agent-role">Final assessment synthesis</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
             <div class="agent-card">
-                <div class="agent-icon" style="background: linear-gradient(135deg, #4299e122, #2b6cb022);">📋</div>
+                <div class="agent-icon" style="background: linear-gradient(135deg, #3b82f611, #1e40af11);">📋</div>
                 <div><div class="agent-name">AuditAgent</div><div class="agent-role">Immutable audit trail generation</div></div>
                 <div class="agent-status"><span class="badge badge-approved">Active</span></div>
             </div>
@@ -99,21 +99,21 @@
             <div class="card-header">
                 <span class="card-title">System Components</span>
             </div>
-            <div class="system-item"><span><span class="dot-green"></span>MCP — RegulatoryKnowledgeBase</span><span style="color: #68d391; font-size: 12px;">Connected</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>Database — SQLite + SQLAlchemy</span><span style="color: #68d391; font-size: 12px;">Healthy</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>InputValidationHook</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>SecurityHook + Rate Limiter</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>GovernanceHook — IRDAI/SOX</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>AuditHook — Immutable Logs</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>OutputValidationHook</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
-            <div class="system-item"><span><span class="dot-green"></span>DocumentProcessingTool</span><span style="color: #68d391; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>MCP — RegulatoryKnowledgeBase</span><span style="color: #059669; font-size: 12px;">Connected</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>Database — SQLite + SQLAlchemy</span><span style="color: #059669; font-size: 12px;">Healthy</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>InputValidationHook</span><span style="color: #059669; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>SecurityHook + Rate Limiter</span><span style="color: #059669; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>GovernanceHook — IRDAI/SOX</span><span style="color: #059669; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>AuditHook — Immutable Logs</span><span style="color: #059669; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>OutputValidationHook</span><span style="color: #059669; font-size: 12px;">Active</span></div>
+            <div class="system-item"><span><span class="dot-green"></span>DocumentProcessingTool</span><span style="color: #059669; font-size: 12px;">Active</span></div>
         </div>
 
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Assessment Pipeline</span>
             </div>
-            <div style="font-size: 12px; color: #a0aec0; line-height: 2;">
+            <div style="font-size: 12px; color: #64748b; line-height: 2;">
                 <div>① InputValidation → SecurityHook</div>
                 <div>② GovernanceHook Pre-Check</div>
                 <div>③ DocumentProcessingTool</div>
@@ -169,9 +169,9 @@ function getStatusBadge(status) {
 }
 
 function getFraudColor(score) {
-    if (score > 0.7) return '#fc8181';
-    if (score > 0.4) return '#f6ad55';
-    return '#68d391';
+    if (score > 0.7) return '#dc2626';
+    if (score > 0.4) return '#ea580c';
+    return '#059669';
 }
 
 async function loadDashboard() {
@@ -195,14 +195,14 @@ async function loadDashboard() {
 
         const tbody = document.getElementById('claims-table-body');
         if (claimsData.claims.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #718096; padding: 2rem;">No claims yet. <a href="/submit" style="color: #667eea;">Submit one to start!</a></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 2rem;">No claims yet. <a href="/submit" style="color: #3b82f6;">Submit one to start!</a></td></tr>';
         } else {
             tbody.innerHTML = claimsData.claims.map(c => `
                 <tr>
-                    <td style="font-family: monospace; color: #7f9cf5;">${c.claim_number}</td>
+                    <td style="font-family: monospace; color: #2563eb;">${c.claim_number}</td>
                     <td>${c.customer_name}</td>
                     <td><span class="badge badge-submitted">${c.claim_type}</span></td>
-                    <td style="color: #e2e8f0;">$${c.claim_amount.toLocaleString()}</td>
+                    <td style="color: #1e293b;">$${c.claim_amount.toLocaleString()}</td>
                     <td style="color: ${getFraudColor(c.fraud_score)};">${c.fraud_score.toFixed(3)}</td>
                     <td>${getStatusBadge(c.status)}</td>
                     <td><a href="/claims/${c.id}/detail" class="btn btn-outline" style="font-size: 12px; padding: 4px 10px;">View</a></td>

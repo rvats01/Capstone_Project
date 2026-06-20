@@ -4,24 +4,24 @@
 
 <style>
 .detail-section { margin-bottom: 1.5rem; }
-.detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 14px; }
-.detail-label { width: 200px; flex-shrink: 0; color: #718096; font-weight: 500; }
-.detail-value { color: #e2e8f0; flex: 1; }
+.detail-row { display: flex; padding: 10px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+.detail-label { width: 200px; flex-shrink: 0; color: #64748b; font-weight: 500; }
+.detail-value { color: #1e293b; flex: 1; }
 .score-item { margin-bottom: 12px; }
-.score-item-label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
-.agent-output { background: #161b27; border: 1px solid #2d3748; border-radius: 8px; padding: 1rem; margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #a0aec0; }
-.tab-nav { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid #2d3748; padding-bottom: 0; }
-.tab { padding: 10px 20px; font-size: 14px; cursor: pointer; color: #718096; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.tab.active { color: #667eea; border-bottom-color: #667eea; }
+.score-item-label { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; color: #475569; }
+.agent-output { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 12px; font-size: 13px; line-height: 1.6; color: #475569; }
+.tab-nav { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0; }
+.tab { padding: 10px 20px; font-size: 14px; cursor: pointer; color: #64748b; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
-code { background: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; color: #7f9cf5; }
-.audit-entry { background: #1a202c; border-left: 3px solid #2d3748; padding: 10px 16px; margin-bottom: 8px; border-radius: 0 8px 8px 0; font-size: 13px; }
-.audit-entry.passed { border-left-color: #48bb78; }
-.audit-entry.failed { border-left-color: #fc8181; }
+code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; color: #2563eb; }
+.audit-entry { background: #f8fafc; border-left: 3px solid #e2e8f0; padding: 10px 16px; margin-bottom: 8px; border-radius: 0 8px 8px 0; font-size: 13px; color: #475569; }
+.audit-entry.passed { border-left-color: #10b981; }
+.audit-entry.failed { border-left-color: #ef4444; }
 </style>
 
-<div id="loading-state" style="text-align: center; padding: 4rem; color: #718096;">
+<div id="loading-state" style="text-align: center; padding: 4rem; color: #64748b;">
     <div class="spinner" style="margin: 0 auto 1rem; width: 32px; height: 32px;"></div>
     Loading claim details...
 </div>
@@ -31,15 +31,15 @@ code { background: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12p
     <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem;">
         <div>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <a href="/claims" style="color: #667eea; font-size: 14px; text-decoration: none;">← All Claims</a>
-                <span style="color: #4a5568;">/</span>
+                <a href="/claims" style="color: #3b82f6; font-size: 14px; text-decoration: none;">← All Claims</a>
+                <span style="color: #cbd5e1;">/</span>
                 <code id="claim-number-header" style="font-size: 16px;"></code>
             </div>
-            <h1 style="font-size: 22px; font-weight: 700; margin-top: 8px;" id="claim-title">Claim Details</h1>
+            <h1 style="font-size: 22px; font-weight: 700; margin-top: 8px; color: #1e293b;" id="claim-title">Claim Details</h1>
         </div>
         <div style="text-align: right;">
             <div id="decision-badge-large" style="font-size: 18px; font-weight: 700;"></div>
-            <div id="approved-amount-display" style="font-size: 14px; color: #68d391; margin-top: 4px;"></div>
+            <div id="approved-amount-display" style="font-size: 14px; color: #059669; margin-top: 4px;"></div>
         </div>
     </div>
 
@@ -70,7 +70,7 @@ code { background: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12p
                         <div class="score-bar"><div class="score-fill score-good" id="sb-compliance" style="width:0%"></div></div>
                     </div>
                     <div class="score-item">
-                        <div class="score-item-label"><span>Fraud Score (lower=better)</span><span id="s-fraud" style="color:#fc8181">—</span></div>
+                        <div class="score-item-label"><span>Fraud Score (lower=better)</span><span id="s-fraud" style="color:#dc2626">—</span></div>
                         <div class="score-bar"><div class="score-fill score-bad" id="sb-fraud" style="width:0%"></div></div>
                     </div>
                     <div class="score-item">
@@ -83,21 +83,21 @@ code { background: #2d3748; padding: 2px 6px; border-radius: 4px; font-size: 12p
                     </div>
                 </div>
 
-                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #2d3748;">
-                    <div style="font-size: 13px; font-weight: 600; color: #a0aec0; margin-bottom: 8px;">Compliance Status</div>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Compliance Status</div>
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="compliance-badges"></div>
                 </div>
 
-                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #2d3748;">
-                    <div style="font-size: 13px; font-weight: 600; color: #a0aec0; margin-bottom: 8px;">Fraud Indicators</div>
-                    <div id="fraud-indicators" style="font-size: 13px; color: #718096;">None detected</div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Fraud Indicators</div>
+                    <div id="fraud-indicators" style="font-size: 13px; color: #64748b;">None detected</div>
                 </div>
             </div>
         </div>
 
         <div class="card" style="margin-top: 1.5rem;">
             <div class="card-header"><span class="card-title">Decision Reason</span></div>
-            <div id="decision-reason" style="font-size: 14px; color: #a0aec0; line-height: 1.7;"></div>
+            <div id="decision-reason" style="font-size: 14px; color: #475569; line-height: 1.7;"></div>
         </div>
     </div>
 
