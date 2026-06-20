@@ -2,11 +2,18 @@
 Generate comprehensive PowerPoint presentation for Insurance Claim Assessment System.
 Requirements: python-pptx library
 Install: pip install python-pptx
+
+Enhanced version with:
+- Visual process flow diagrams
+- Agent interaction flowcharts
+- Application screen representations
+- Assessment result visualizations
 """
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 import os
 
@@ -17,6 +24,8 @@ ACCENT_ORANGE = RGBColor(255, 127, 39)
 WHITE = RGBColor(255, 255, 255)
 DARK_GRAY = RGBColor(64, 64, 64)
 LIGHT_GRAY = RGBColor(242, 242, 242)
+GREEN = RGBColor(76, 175, 80)
+RED = RGBColor(244, 67, 54)
 
 
 def create_presentation():
@@ -572,7 +581,66 @@ def create_presentation():
            • Resource planning optimization
         """)
     
-    # Slide 24: Conclusion & Call to Action
+    # Slide 24: Process Flow Diagram (VISUAL)
+    slide_number += 1
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = WHITE
+    add_process_flow_diagram(slide, f"Slide {slide_number}: Assessment Pipeline - Visual Flow")
+    
+    # Slide 25: Dashboard Representation (VISUAL)
+    slide_number += 1
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = WHITE
+    add_dashboard_representation(slide, f"Slide {slide_number}: Real-Time Dashboard UI")
+    
+    # Slide 26: Agent Interaction Diagram (VISUAL)
+    slide_number += 1
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = WHITE
+    add_agent_interaction_diagram(slide, f"Slide {slide_number}: Multi-Agent Interaction Pattern")
+    
+    # Slide 27: Assessment Results Visualization
+    slide_number += 1
+    add_content_slide(prs, f"Slide {slide_number}: Assessment Results Sample",
+        """
+        Example Assessment Output (from Dashboard):
+        
+        ┌─────────────────────────────────────────────────────────┐
+        │ CLAIM: CLM-20260614-9FB40756                            │
+        │ Customer: Robert Williams | Type: Auto | Amount: $8,500 │
+        └─────────────────────────────────────────────────────────┘
+        
+        📊 ASSESSMENT SCORES:
+           Final Score: 0.842 ✓ (UNDER REVIEW - Agent synthesis)
+           Compliance Score: 0.740 ✓ (Passed IRDAI/SOX/AML)
+           Fraud Score: 0.000 ✓ (No fraud indicators)
+           Risk Score: 0.000 ✓ (Low risk profile)
+           Identity Confidence: 0.500 ✓ (Verified)
+        
+        ✅ COMPLIANCE STATUS: PASS
+           ✓ IRDAI Validation: PASS
+           ✓ SOX Compliance: PASS
+           ✓ AML/KYC: PASS
+           ✓ Coverage Validation: PASS
+        
+        ⏱️ PROCESSING TIMELINE:
+           Submitted: 6/14/2026, 7:05:46 AM
+           Assessed: 6/14/2026, 7:09:24 AM
+           Duration: ~3.5 minutes (agents + hooks)
+        
+        Status: UNDER REVIEW → Ready for manual verification (optional)
+        """)
+    
+    # Slide 28: Conclusion & Call to Action
     slide_number += 1
     add_title_slide(prs, "Ready for Production Deployment",
                    "Autonomous Insurance Claim Assessment System",
@@ -698,6 +766,215 @@ def add_text_box(slide, left, top, width, height, text, font_size,
     p.font.bold = bold
     p.font.color.rgb = font_color
     return text_box
+
+
+def add_process_flow_diagram(slide, title):
+    """Add a visual process flow diagram showing the assessment pipeline."""
+    slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar = slide.shapes[-1]
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), 
+                                         Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = title
+    p.font.size = Pt(32)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Draw process boxes
+    steps = [
+        ("INPUT", ACCENT_ORANGE),
+        ("Validation", LIGHT_BLUE),
+        ("Security", LIGHT_BLUE),
+        ("Customer\nAgent", GREEN),
+        ("Knowledge\nAgent", GREEN),
+        ("Compliance\n& Risk", GREEN),
+        ("Decision\nAgent", GREEN),
+        ("Audit\nAgent", GREEN),
+        ("OUTPUT", ACCENT_ORANGE),
+    ]
+    
+    y_pos = Inches(2)
+    box_width = Inches(0.9)
+    box_height = Inches(0.6)
+    spacing = Inches(0.3)
+    
+    for i, (label, color) in enumerate(steps):
+        x_pos = Inches(0.3 + (i * 1.05))
+        shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, 
+                                       x_pos, y_pos, box_width, box_height)
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = color
+        shape.line.color.rgb = DARK_BLUE
+        
+        # Add label
+        text_frame = shape.text_frame
+        text_frame.clear()
+        p = text_frame.paragraphs[0]
+        p.text = label
+        p.font.size = Pt(9)
+        p.font.bold = True
+        p.font.color.rgb = WHITE
+        p.alignment = PP_ALIGN.CENTER
+        
+        # Add arrows between steps
+        if i < len(steps) - 1:
+            arrow_start_x = x_pos + box_width
+            arrow = slide.shapes.add_connector(1, arrow_start_x, y_pos + box_height/2,
+                                               x_pos + Inches(1.05), y_pos + box_height/2)
+            arrow.line.color.rgb = DARK_GRAY
+    
+    # Add status indicator
+    status_box = slide.shapes.add_textbox(Inches(0.5), Inches(3.2), 
+                                         Inches(9), Inches(3.8))
+    status_frame = status_box.text_frame
+    status_frame.word_wrap = True
+    
+    status_text = """
+    Assessment Pipeline Execution:
+    
+    ✓ InputValidationHook    — Sanitizes and validates claim data
+    ✓ SecurityHook           — Authenticates and authorizes access
+    ✓ CustomerAgent          — Validates identity and extracts claim data
+    ✓ KnowledgeAgent (MCP)   — Retrieves regulatory knowledge and policies
+    ✓ ComplianceAgent        — Validates IRDAI, SOX, AML compliance
+    ✓ RiskAgent              — Performs fraud detection and risk scoring
+    ✓ DecisionAgent          — Synthesizes all outputs and makes recommendation
+    ✓ AuditAgent             — Creates immutable audit trail
+    ✓ OutputValidationHook   — Validates final decision before delivery
+    """
+    
+    p = status_frame.paragraphs[0]
+    p.text = status_text.strip()
+    p.font.size = Pt(12)
+    p.font.color.rgb = DARK_GRAY
+    p.space_before = Pt(6)
+    p.space_after = Pt(6)
+
+
+def add_dashboard_representation(slide, title):
+    """Add a representation of the dashboard UI."""
+    slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar = slide.shapes[-1]
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), 
+                                        Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = title
+    p.font.size = Pt(32)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Dashboard representation
+    content = """
+    🛡️ DASHBOARD FEATURES & REAL-TIME MONITORING
+    
+    ┌─────────────────────────────────────────────────────────────┐
+    │ Total Claims: 2         │ Approved: 0        │ Rejected: 0   │
+    │ Pending Review: 0       │ Avg Fraud Score: 0.0  │ Avg Claim: $6K │
+    └─────────────────────────────────────────────────────────────┘
+    
+    AGENT STATUS (All 6 Operational):
+    ┌──────────────────────────────────────────────────────────────────┐
+    │ ✓ CustomerAgent      — Identity validation & claim extraction    │
+    │ ✓ KnowledgeAgent     — Regulatory knowledge (MCP-enhanced)      │
+    │ ✓ ComplianceAgent    — IRDAI / SOX / AML validation            │
+    │ ✓ RiskAgent          — Fraud detection & risk scoring           │
+    │ ✓ DecisionAgent      — Final assessment synthesis               │
+    │ ✓ AuditAgent         — Immutable audit trail generation         │
+    └──────────────────────────────────────────────────────────────────┘
+    
+    SYSTEM COMPONENTS STATUS:
+    ┓ MCP — RegulatoryKnowledgeBase   ✓ Connected
+    ┓ Database — SQLite + SQLAlchemy  ✓ Healthy
+    ┓ All Hooks (5 total)             ✓ Active
+    ┓ DocumentProcessingTool          ✓ Active
+    """
+    
+    content_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.1), 
+                                          Inches(9), Inches(6))
+    content_frame = content_box.text_frame
+    content_frame.word_wrap = True
+    
+    p = content_frame.paragraphs[0]
+    p.text = content.strip()
+    p.font.size = Pt(11)
+    p.font.name = "Courier New"
+    p.font.color.rgb = DARK_GRAY
+    p.space_before = Pt(2)
+    p.space_after = Pt(2)
+
+
+def add_agent_interaction_diagram(slide, title):
+    """Add a diagram showing agent interactions."""
+    slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar = slide.shapes[-1]
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), 
+                                        Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = title
+    p.font.size = Pt(32)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Agent interaction flow
+    content = """
+    MULTI-AGENT INTERACTION PATTERN
+    
+    ① INPUT LAYER
+       ↓
+    ② CUSTOMER AGENT (Validates customer & extracts claim data)
+       ↓
+    ③ KNOWLEDGE AGENT (Retrieves regulatory knowledge via MCP)
+       ↓
+    ④ PARALLEL EXECUTION:
+       ├─ COMPLIANCE AGENT (IRDAI/SOX/AML validation)
+       └─ RISK AGENT (Fraud detection & anomaly scoring)
+       ↓
+    ⑤ DECISION AGENT (Synthesizes results → Final recommendation)
+       ├─ Approval with confidence score
+       ├─ Rejection with reasoning
+       └─ Pending Review with required actions
+       ↓
+    ⑥ AUDIT AGENT (Creates immutable record)
+       └─ Hash-chained audit log
+       └─ Decision reasoning
+       └─ Compliance validation results
+       ↓
+    ⑦ OUTPUT LAYER
+       ├─ Assessment result (Decision + Confidence)
+       ├─ Audit trail (Complete history)
+       └─ Explainable reasoning (Why decision made)
+    
+    Each agent communicates via AgentResult dataclass:
+    • agent_name, success, data, reasoning, confidence, duration_ms, error
+    """
+    
+    content_box = slide.shapes.add_textbox(Inches(0.5), Inches(1.1), 
+                                          Inches(9), Inches(6))
+    content_frame = content_box.text_frame
+    content_frame.word_wrap = True
+    
+    p = content_frame.paragraphs[0]
+    p.text = content.strip()
+    p.font.size = Pt(11)
+    p.font.name = "Courier New"
+    p.font.color.rgb = DARK_GRAY
+    p.space_before = Pt(2)
+    p.space_after = Pt(2)
 
 
 if __name__ == "__main__":
