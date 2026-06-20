@@ -132,24 +132,15 @@ def create_presentation():
     left = Inches(0.5)
     top = Inches(0.5)
     add_text_box(slide, left, top, Inches(9), Inches(0.6), 
-                f"Slide {slide_number}: Processing Pipeline Flow", 24, DARK_BLUE, True)
+                f"Slide {slide_number}: Dashboard - Real Application Interface", 24, DARK_BLUE, True)
     
-    pipeline_text = """
-    INPUT → [InputValidationHook] → [SecurityHook]
-              ↓
-    [CustomerAgent] → [KnowledgeAgent with MCP]
-              ↓
-    [ComplianceAgent] ⟷ [RiskAgent] (parallel)
-              ↓
-    [DecisionAgent] → [AuditAgent]
-              ↓
-    [GovernanceHook] → [OutputValidationHook]
-              ↓
-    RESPONSE (Decision + Audit Trail + Confidence Score)
-    """
-    
-    add_text_box(slide, left, Inches(1.5), Inches(9), Inches(5.5), 
-                pipeline_text, 14, DARK_GRAY, False)
+    # Add dashboard screenshot
+    screenshot_path = os.path.join(os.path.dirname(__file__), "screenshot_dashboard.png")
+    if os.path.exists(screenshot_path):
+        slide.shapes.add_picture(screenshot_path, Inches(0.3), Inches(1.2), width=Inches(9.4))
+    else:
+        add_text_box(slide, left, Inches(1.5), Inches(9), Inches(5.5), 
+                    "Dashboard Screenshot (see running application)", 14, DARK_GRAY, False)
     
     # Slide 7: Hooks Pipeline
     slide_number += 1
@@ -581,66 +572,181 @@ def create_presentation():
            • Resource planning optimization
         """)
     
-    # Slide 24: Process Flow Diagram (VISUAL)
+    # Slide 24: Submit Claim Form (SCREENSHOT)
     slide_number += 1
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    prs.slides.add_slide(prs.slide_layouts[6])
+    slide = prs.slides[-1]
     background = slide.background
     fill = background.fill
     fill.solid()
     fill.fore_color.rgb = WHITE
-    add_process_flow_diagram(slide, f"Slide {slide_number}: Assessment Pipeline - Visual Flow")
     
-    # Slide 25: Dashboard Representation (VISUAL)
+    # Add title
+    title_bar = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = f"Slide {slide_number}: Step 1 - Submit Insurance Claim Form"
+    p.font.size = Pt(28)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Add screenshot
+    screenshot_path = os.path.join(os.path.dirname(__file__), "screenshot_submit_claim.png")
+    if os.path.exists(screenshot_path):
+        slide.shapes.add_picture(screenshot_path, Inches(0.2), Inches(0.9), width=Inches(9.6))
+    
+    # Add description box
+    desc_box = slide.shapes.add_textbox(Inches(0.5), Inches(6.8), Inches(9), Inches(0.8))
+    desc_frame = desc_box.text_frame
+    desc_frame.word_wrap = True
+    p = desc_frame.paragraphs[0]
+    p.text = "User fills out comprehensive claim form with customer info, policy details, claim type, amount, and incident description. Form validates all required fields before submission."
+    p.font.size = Pt(12)
+    p.font.color.rgb = DARK_GRAY
+    
+    # Slide 25: Claims List View (SCREENSHOT)
     slide_number += 1
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    prs.slides.add_slide(prs.slide_layouts[6])
+    slide = prs.slides[-1]
     background = slide.background
     fill = background.fill
     fill.solid()
     fill.fore_color.rgb = WHITE
-    add_dashboard_representation(slide, f"Slide {slide_number}: Real-Time Dashboard UI")
     
-    # Slide 26: Agent Interaction Diagram (VISUAL)
+    # Add title
+    title_bar = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = f"Slide {slide_number}: Step 2 - Claims Processing Queue"
+    p.font.size = Pt(28)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Add screenshot
+    screenshot_path = os.path.join(os.path.dirname(__file__), "screenshot_claims_list.png")
+    if os.path.exists(screenshot_path):
+        slide.shapes.add_picture(screenshot_path, Inches(0.2), Inches(0.9), width=Inches(9.6))
+    
+    # Add description
+    desc_box = slide.shapes.add_textbox(Inches(0.5), Inches(6.8), Inches(9), Inches(0.8))
+    desc_frame = desc_box.text_frame
+    desc_frame.word_wrap = True
+    p = desc_frame.paragraphs[0]
+    p.text = "Dashboard displays all submitted claims with real-time status, fraud scores, and compliance validation results. Users can track claim processing through multi-agent pipeline."
+    p.font.size = Pt(12)
+    p.font.color.rgb = DARK_GRAY
+    
+    # Slide 26: Claim Assessment Results (SCREENSHOT)
     slide_number += 1
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    prs.slides.add_slide(prs.slide_layouts[6])
+    slide = prs.slides[-1]
     background = slide.background
     fill = background.fill
     fill.solid()
     fill.fore_color.rgb = WHITE
-    add_agent_interaction_diagram(slide, f"Slide {slide_number}: Multi-Agent Interaction Pattern")
     
-    # Slide 27: Assessment Results Visualization
+    # Add title
+    title_bar = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = f"Slide {slide_number}: Step 3 - AI Assessment Results & Decision"
+    p.font.size = Pt(28)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Add screenshot
+    screenshot_path = os.path.join(os.path.dirname(__file__), "screenshot_claim_detail.png")
+    if os.path.exists(screenshot_path):
+        slide.shapes.add_picture(screenshot_path, Inches(0.2), Inches(0.9), width=Inches(9.6))
+    
+    # Add description
+    desc_box = slide.shapes.add_textbox(Inches(0.5), Inches(6.8), Inches(9), Inches(0.8))
+    desc_frame = desc_box.text_frame
+    desc_frame.word_wrap = True
+    p = desc_frame.paragraphs[0]
+    p.text = "Detailed assessment results show AI agent outputs: fraud scores, compliance validation (IRDAI/SOX/AML), risk scoring, final recommendation with confidence, and complete audit trail."
+    p.font.size = Pt(12)
+    p.font.color.rgb = DARK_GRAY
+    
+    # Slide 27: API Documentation (SCREENSHOT)
     slide_number += 1
-    add_content_slide(prs, f"Slide {slide_number}: Assessment Results Sample",
+    prs.slides.add_slide(prs.slide_layouts[6])
+    slide = prs.slides[-1]
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = WHITE
+    
+    # Add title
+    title_bar = slide.shapes.add_shape(1, Inches(0), Inches(0), Inches(10), Inches(0.8))
+    title_bar.fill.solid()
+    title_bar.fill.fore_color.rgb = DARK_BLUE
+    title_bar.line.color.rgb = DARK_BLUE
+    
+    title_box = slide.shapes.add_textbox(Inches(0.5), Inches(0.15), Inches(9), Inches(0.6))
+    title_frame = title_box.text_frame
+    p = title_frame.paragraphs[0]
+    p.text = f"Slide {slide_number}: REST API Documentation & Integration"
+    p.font.size = Pt(28)
+    p.font.bold = True
+    p.font.color.rgb = WHITE
+    
+    # Add screenshot
+    screenshot_path = os.path.join(os.path.dirname(__file__), "screenshot_api_docs.png")
+    if os.path.exists(screenshot_path):
+        slide.shapes.add_picture(screenshot_path, Inches(0.2), Inches(0.9), width=Inches(9.6))
+    
+    # Add description
+    desc_box = slide.shapes.add_textbox(Inches(0.5), Inches(6.8), Inches(9), Inches(0.8))
+    desc_frame = desc_box.text_frame
+    desc_frame.word_wrap = True
+    p = desc_frame.paragraphs[0]
+    p.text = "Swagger UI provides interactive API documentation. Endpoints support claim submission, status retrieval, assessment triggering, audit trail access, and dashboard metrics."
+    p.font.size = Pt(12)
+    p.font.color.rgb = DARK_GRAY
+    
+    # Slide 28: Complete Workflow Summary
+    slide_number += 1
+    add_content_slide(prs, f"Slide {slide_number}: Complete Claim Assessment Workflow",
         """
-        Example Assessment Output (from Dashboard):
+        End-to-End Automated Process:
         
-        ┌─────────────────────────────────────────────────────────┐
-        │ CLAIM: CLM-20260614-9FB40756                            │
-        │ Customer: Robert Williams | Type: Auto | Amount: $8,500 │
-        └─────────────────────────────────────────────────────────┘
+        1️⃣  SUBMISSION: User fills form → System validates → Stores in database
         
-        📊 ASSESSMENT SCORES:
-           Final Score: 0.842 ✓ (UNDER REVIEW - Agent synthesis)
-           Compliance Score: 0.740 ✓ (Passed IRDAI/SOX/AML)
-           Fraud Score: 0.000 ✓ (No fraud indicators)
-           Risk Score: 0.000 ✓ (Low risk profile)
-           Identity Confidence: 0.500 ✓ (Verified)
+        2️⃣  PIPELINE PROCESSING (Automated by 6 AI Agents):
+           InputValidationHook → SecurityHook → CustomerAgent → KnowledgeAgent (MCP)
+           → ComplianceAgent ⟷ RiskAgent (parallel) → DecisionAgent → AuditAgent
+           → OutputValidationHook
         
-        ✅ COMPLIANCE STATUS: PASS
-           ✓ IRDAI Validation: PASS
-           ✓ SOX Compliance: PASS
-           ✓ AML/KYC: PASS
-           ✓ Coverage Validation: PASS
+        3️⃣  RESULTS DISPLAY:
+           Assessment scores (Final, Compliance, Fraud, Risk, Identity)
+           Compliance status (IRDAI ✓ SOX ✓ AML ✓ KYC ✓)
+           Fraud indicators and risk flags
+           Complete audit trail with reasoning
         
-        ⏱️ PROCESSING TIMELINE:
-           Submitted: 6/14/2026, 7:05:46 AM
-           Assessed: 6/14/2026, 7:09:24 AM
-           Duration: ~3.5 minutes (agents + hooks)
-        
-        Status: UNDER REVIEW → Ready for manual verification (optional)
+        4️⃣  DECISION OUTPUT:
+           Approval / Rejection / Pending Review
+           Confidence score (0-100%)
+           Explainable reasoning
+           Audit trail for compliance
         """)
     
-    # Slide 28: Conclusion & Call to Action
+    # Slide 29: Conclusion & Call to Action
     slide_number += 1
     add_title_slide(prs, "Ready for Production Deployment",
                    "Autonomous Insurance Claim Assessment System",
